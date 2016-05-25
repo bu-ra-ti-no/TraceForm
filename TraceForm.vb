@@ -6,6 +6,7 @@ Friend Class TraceForm
     Inherits Form
     Private _MaxLineCount As Integer
     Private WithEvents LV As ListView
+    Private TraceDelegate As Action(Of String) = AddressOf Trace
 
     Public Sub New()
         MyBase.New()
@@ -66,7 +67,15 @@ Friend Class TraceForm
         LV.EndUpdate()
     End Sub
 
+    ''' <summary>
+    ''' Adds a new row to the list (not from main thread).
+    ''' </summary>
+    Public Sub TraceSafe(ByVal Message As String)
+        Invoke(TraceDelegate, Message)
+    End Sub
+
     Private Sub ListView1_Resize(ByVal sender As Object, ByVal e As System.EventArgs) Handles LV.Resize
         LV.Columns(0).Width = Math.Max(LV.ClientSize.Width - 10, 5)
     End Sub
 End Class
+
