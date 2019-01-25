@@ -4,27 +4,28 @@
 <System.ComponentModel.DesignerCategory("Code")> _
 Friend Class TraceForm
     Inherits Form
-    Private _MaxLineCount As Integer
+    Private _maxLineCount As Integer
     Private WithEvents LV As ListView
-    Private TraceDelegate As Action(Of String) = AddressOf InnerTrace
+    Private _traceDelegate As Action(Of String) = AddressOf InnerTrace
 
     Public Sub New()
         MyBase.New()
-        FormBorderStyle = Windows.Forms.FormBorderStyle.SizableToolWindow
+        FormBorderStyle = FormBorderStyle.SizableToolWindow
         ShowInTaskbar = False
-        LV = New ListView
-        LV.Font = New Font("Courier", 11, FontStyle.Regular, GraphicsUnit.Pixel)
-        LV.BackColor = Color.LightGray
-        LV.ForeColor = Color.Black
-        LV.HeaderStyle = ColumnHeaderStyle.None
+        LV = New ListView With {
+            .Font = New Font("Courier", 11, FontStyle.Regular, GraphicsUnit.Pixel),
+            .BackColor = Color.LightGray,
+            .ForeColor = Color.Black,
+            .HeaderStyle = ColumnHeaderStyle.None,
+            .Dock = DockStyle.Fill,
+            .View = View.Details
+        }
         LV.Columns.Add(String.Empty)
-        LV.Dock = DockStyle.Fill
-        LV.View = View.Details
         MaxLineCount = 22
         Size = New Size(200, MaximumSize.Height)
-        LV.GetType.GetProperty("DoubleBuffered", _
+        LV.GetType.GetProperty("DoubleBuffered",
                                       Reflection.BindingFlags.NonPublic _
-                                      Or Reflection.BindingFlags.Instance). _
+                                      Or Reflection.BindingFlags.Instance).
                                       SetValue(LV, True, Nothing)
         Controls.Add(LV)
     End Sub
@@ -34,23 +35,23 @@ Friend Class TraceForm
     ''' </summary>
     Public Property MaxLineCount() As Integer
         Get
-            Return _MaxLineCount
+            Return _maxLineCount
         End Get
-        Set(ByVal value As Integer)
+        Set(value As Integer)
             If value < 1 Then value = 1
             If value > 5000 Then value = 5000
-            _MaxLineCount = value
+            _maxLineCount = value
             Dim h As Integer
-            If LV.Items.Count = 0 Then
+            If LV.Items.Count = 0
                 LV.Items.Add(LV.ToString)
                 h = LV.GetItemRect(0).Height
                 LV.Items.Clear()
             Else
                 h = LV.GetItemRect(0).Height
             End If
-            MaximumSize = New Size(Screen.GetWorkingArea(Me).Width, _
-                                   value * h - ClientSize.Height + _
-                                   Height + LV.Height - _
+            MaximumSize = New Size(Screen.GetWorkingArea(Me).Width,
+                                   value * h - ClientSize.Height +
+                                   Height + LV.Height -
                                    LV.ClientSize.Height)
         End Set
     End Property
@@ -58,25 +59,25 @@ Friend Class TraceForm
     ''' <summary>
     ''' Adds a new row to the list.
     ''' </summary>
-    Public Sub Trace(ByVal Message As String)
-        If InvokeRequired Then
-            Invoke(TraceDelegate, Message)
+    Public Sub Trace(message As String)
+        If InvokeRequired
+            Invoke(_traceDelegate, message)
         Else
-            InnerTrace(Message)
+            InnerTrace(message)
         End If
     End Sub
 
-    Private Sub InnerTrace(ByVal Message)
+    Private Sub InnerTrace(message)
         LV.BeginUpdate()
-        If LV.Items.Count = MaxLineCount Then
+        If LV.Items.Count = MaxLineCount
             LV.Items.RemoveAt(0)
         End If
-        Dim i = LV.Items.Add(Message)
-        If Message.StartsWith("*") Then i.ForeColor = Color.Crimson
+        Dim i = LV.Items.Add(message)
+        If message.StartsWith("*") Then i.ForeColor = Color.Crimson
         LV.EndUpdate()
     End Sub
 
-    Private Sub ListView1_Resize(ByVal sender As Object, ByVal e As System.EventArgs) Handles LV.Resize
+    Private Sub ListView1_Resize() Handles LV.Resize
         LV.Columns(0).Width = Math.Max(LV.ClientSize.Width - 10, 5)
     End Sub
 End Class
