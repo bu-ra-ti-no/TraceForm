@@ -24,8 +24,8 @@ Friend Class TraceForm
         MaxLineCount = 22
         Size = New Size(200, MaximumSize.Height)
         LV.GetType.GetProperty("DoubleBuffered",
-                                      Reflection.BindingFlags.NonPublic _
-                                      Or Reflection.BindingFlags.Instance).
+                                      Reflection.BindingFlags.NonPublic Or
+                                      Reflection.BindingFlags.Instance).
                                       SetValue(LV, True, Nothing)
         Controls.Add(LV)
     End Sub
